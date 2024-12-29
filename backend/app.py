@@ -3,11 +3,13 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
+import logging
 
 app = Flask(__name__)
 CORS(app)
 
-
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Initialize the database
 def init_db():
@@ -21,11 +23,6 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-
-if __name__ == "__main__":
-    init_db()
-    app.run(host="0.0.0.0", port=5000)
-
 
 # Search the database for cached answers
 def search_cache(question):
@@ -55,14 +52,12 @@ def scrape_websites(question):
         try:
             response = requests.get(website, timeout=5)
             soup = BeautifulSoup(response.text, "html.parser")
-
-            # Example: Scrape paragraphs containing potential answers
             paragraphs = soup.find_all("p")
             for paragraph in paragraphs:
                 if question.lower() in paragraph.text.lower():
                     return paragraph.text
         except Exception as e:
-            print(f"Error scraping {website}: {e}")
+            logging.error(f"Error scraping {website}: {e}")
     return None
 
 @app.route("/chat", methods=["POST"])
@@ -88,4 +83,4 @@ def chat():
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
