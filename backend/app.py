@@ -10,7 +10,7 @@ import pandas as pd
 import nfl_data_py as nfl
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/https://nfl-chat-bot.vercel.app": {"origins": "*"}})
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
