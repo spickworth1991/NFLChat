@@ -49,5 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     messageDiv.textContent = text;
     messages.appendChild(messageDiv);
     messages.scrollTop = messages.scrollHeight;
+    return messageDiv; // Ensure the messageDiv is returned
   }
+  
 });
