@@ -1,12 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import sqlite3
 import requests
 from bs4 import BeautifulSoup
-import sqlite3
 from difflib import SequenceMatcher
 import logging
 import string
 import pandas as pd
+from rpy2.robjects.packages import importr
+from rpy2.robjects import pandas2ri
+
+# Activate pandas2ri conversion
+pandas2ri.activate()
+
+# Import nflreadr R package
+nflreadr = importr("nflreadr")
 
 app = Flask(__name__)
 CORS(app)
@@ -57,44 +65,45 @@ def save_to_cache(question, answer):
     conn.commit()
     conn.close()
 
-# Fetch data from nflverse (team and player stats)
-def fetch_nflverse_data():
+# Fetch player stats using nflreadr
+def fetch_player_stats():
     try:
-        # Example: Fetch team stats from nflverse
-        team_stats_url = "https://github.com/nflverse/nflverse-data/releases/download/team_stats/team_stats.csv"
-        team_stats = pd.read_csv(team_stats_url)
-
-        player_stats_url = "https://github.com/nflverse/nflverse-data/releases/download/player_stats/player_stats.csv"
-        player_stats = pd.read_csv(player_stats_url)
-
-        return {"team_stats": team_stats, "player_stats": player_stats}
+        player_stats = nflreadr.load_player_stats()
+        return pandas2ri.rpy2py(player_stats)  # Convert R DataFrame to pandas DataFrame
     except Exception as e:
-        logging.error(f"Error fetching data from nflverse: {e}")
+        logging.error(f"Error fetching player stats: {e}")
+        return None
+
+# Fetch team stats using nflreadr
+def fetch_team_stats():
+    try:
+        team_stats = nflreadr.load_team_stats()
+        return pandas2ri.rpy2py(team_stats)  # Convert R DataFrame to pandas DataFrame
+    except Exception as e:
+        logging.error(f"Error fetching team stats: {e}")
         return None
 
 def get_team_stats(team_name):
-    data = fetch_nflverse_data()
-    if not data:
-        return "Error accessing NFL stats."
+    team_stats = fetch_team_stats()
+    if team_stats is None:
+        return "Error accessing NFL team stats."
 
-    team_stats = data.get("team_stats")
     team = team_stats[team_stats["team"].str.contains(team_name, case=False, na=False)]
     if not team.empty:
         return team.iloc[0].to_dict()
     return "Team stats not found."
 
 def get_player_stats(player_name):
-    data = fetch_nflverse_data()
-    if not data:
-        return "Error accessing NFL stats."
+    player_stats = fetch_player_stats()
+    if player_stats is None:
+        return "Error accessing NFL player stats."
 
-    player_stats = data.get("player_stats")
     player = player_stats[player_stats["player"].str.contains(player_name, case=False, na=False)]
     if not player.empty:
         return player.iloc[0].to_dict()
     return "Player stats not found."
 
-# Web scraping function with improved keyword-based logic
+# Web scraping function as a fallback
 def scrape_websites(question):
     websites = [
         "https://www.nfl.com/news/",
@@ -130,7 +139,7 @@ def chat():
     if cached_answer:
         return jsonify({"reply": cached_answer})
 
-    # Step 2: Check nflverse data
+    # Step 2: Fetch data via nflreadr
     if "team stats" in question.lower():
         team_name = question.split("team stats")[-1].strip()
         return jsonify({"reply": get_team_stats(team_name)})
