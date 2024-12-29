@@ -7,6 +7,8 @@ import sqlite3
 app = Flask(__name__)
 CORS(app)
 
+
+
 # Initialize the database
 def init_db():
     conn = sqlite3.connect("nfl_cache.db")
@@ -19,6 +21,11 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+if __name__ == "__main__":
+    init_db()
+    app.run(host="0.0.0.0", port=5000)
+
 
 # Search the database for cached answers
 def search_cache(question):
