@@ -6,6 +6,7 @@ import sqlite3
 from difflib import SequenceMatcher
 import logging
 import string
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -42,7 +43,7 @@ def search_cache(question):
     matches = []
     for cached_question, cached_answer in results:
         similarity = SequenceMatcher(None, normalized_question, normalize_text(cached_question)).ratio()
-        if similarity > 0.8:  # Only consider matches with a similarity score above 
+        if similarity > 0.8:  # Consider matches with similarity > 80%
             matches.append((similarity, cached_answer))
 
     matches.sort(reverse=True, key=lambda x: x[0])
@@ -55,6 +56,43 @@ def save_to_cache(question, answer):
     cursor.execute("INSERT OR REPLACE INTO cache (question, answer) VALUES (?, ?)", (question, answer))
     conn.commit()
     conn.close()
+
+# Fetch data from nflverse (team and player stats)
+def fetch_nflverse_data():
+    try:
+        # Example: Fetch team stats from nflverse
+        team_stats_url = "https://github.com/nflverse/nflverse-data/releases/download/team_stats/team_stats.csv"
+        team_stats = pd.read_csv(team_stats_url)
+
+        player_stats_url = "https://github.com/nflverse/nflverse-data/releases/download/player_stats/player_stats.csv"
+        player_stats = pd.read_csv(player_stats_url)
+
+        return {"team_stats": team_stats, "player_stats": player_stats}
+    except Exception as e:
+        logging.error(f"Error fetching data from nflverse: {e}")
+        return None
+
+def get_team_stats(team_name):
+    data = fetch_nflverse_data()
+    if not data:
+        return "Error accessing NFL stats."
+
+    team_stats = data.get("team_stats")
+    team = team_stats[team_stats["team"].str.contains(team_name, case=False, na=False)]
+    if not team.empty:
+        return team.iloc[0].to_dict()
+    return "Team stats not found."
+
+def get_player_stats(player_name):
+    data = fetch_nflverse_data()
+    if not data:
+        return "Error accessing NFL stats."
+
+    player_stats = data.get("player_stats")
+    player = player_stats[player_stats["player"].str.contains(player_name, case=False, na=False)]
+    if not player.empty:
+        return player.iloc[0].to_dict()
+    return "Player stats not found."
 
 # Web scraping function with improved keyword-based logic
 def scrape_websites(question):
@@ -87,12 +125,20 @@ def chat():
     data = request.get_json()
     question = data.get("message", "").strip()
 
-    # Check cache with fuzzy matching
+    # Step 1: Check cache
     cached_answer = search_cache(question)
     if cached_answer:
         return jsonify({"reply": cached_answer})
 
-    # Scrape websites if not in cache
+    # Step 2: Check nflverse data
+    if "team stats" in question.lower():
+        team_name = question.split("team stats")[-1].strip()
+        return jsonify({"reply": get_team_stats(team_name)})
+    if "player stats" in question.lower():
+        player_name = question.split("player stats")[-1].strip()
+        return jsonify({"reply": get_player_stats(player_name)})
+
+    # Step 3: Web scrape if not in cache or nflverse
     scraped_answers = scrape_websites(question)
     if scraped_answers:
         formatted_answers = "\n".join([f"- {answer}" for answer in scraped_answers])
