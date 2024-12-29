@@ -42,7 +42,7 @@ def search_cache(question):
     matches = []
     for cached_question, cached_answer in results:
         similarity = SequenceMatcher(None, normalized_question, normalize_text(cached_question)).ratio()
-        if similarity > 0.5:  # Lowered threshold to 50%
+        if similarity > 0.7:  # Lowered threshold to 50%
             matches.append((similarity, cached_answer))
 
     matches.sort(reverse=True, key=lambda x: x[0])
