@@ -1,6 +1,6 @@
-Flask
-Flask-Cors
+rpy2
+flask
+flask-cors
 requests
 beautifulsoup4
 pandas
-rpy2
