@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchingMessage = addMessage('Searching for an answer...', 'bot');
 
     // Call the backend API
-    fetch('http://127.0.0.1:5000', {
+    fetch('http://127.0.0.1:5000/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userMessage }),
