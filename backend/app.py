@@ -41,6 +41,14 @@ def init_db():
 def normalize_text(text):
     return text.lower().translate(str.maketrans('', '', string.punctuation))
 
+# Clear nflreadr cache
+def clear_cache():
+    try:
+        with localconverter(default_converter + pandas2ri.converter):
+            nflreadr.clear_cache()
+    except Exception as e:
+        logging.error(f"Error clearing cache: {e}")
+
 # Search the database for cached answers with fuzzy matching
 def search_cache(question):
     conn = sqlite3.connect("nfl_cache.db")
@@ -150,11 +158,11 @@ def chat():
 
     # Step 2: Fetch data via nflreadr
     if "team stats" in question.lower():
-        nflreadr.clear_cache()
+        clear_cache()
         team_name = question.split("team stats")[-1].strip()
         return jsonify({"reply": get_team_stats(team_name)})
     if "player stats" in question.lower():
-        nflreadr.clear_cache()
+        clear_cache()
         player_name = question.split("player stats")[-1].strip()
         return jsonify({"reply": get_player_stats(player_name)})
 
