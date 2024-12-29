@@ -1,6 +1,6 @@
-rpy2
 flask
 flask-cors
 requests
 beautifulsoup4
 pandas
+nfl-data-py

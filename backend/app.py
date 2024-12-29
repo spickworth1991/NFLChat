@@ -7,16 +7,7 @@ from difflib import SequenceMatcher
 import logging
 import string
 import pandas as pd
-from rpy2.robjects import pandas2ri
-from rpy2.robjects.packages import importr
-from rpy2.robjects import default_converter, pandas2ri
-from rpy2.robjects.conversion import localconverter
-
-# Activate pandas2ri conversion
-pandas2ri.activate()
-
-# Import nflreadr R package
-nflreadr = importr("nflreadr")
+import nfl_data_py as nfl
 
 app = Flask(__name__)
 CORS(app)
@@ -40,14 +31,6 @@ def init_db():
 # Normalize text by removing punctuation and converting to lowercase
 def normalize_text(text):
     return text.lower().translate(str.maketrans('', '', string.punctuation))
-
-# Clear nflreadr cache
-def clear_cache():
-    try:
-        with localconverter(default_converter + pandas2ri.converter):
-            nflreadr.clear_cache()
-    except Exception as e:
-        logging.error(f"Error clearing cache: {e}")
 
 # Search the database for cached answers with fuzzy matching
 def search_cache(question):
@@ -75,50 +58,29 @@ def save_to_cache(question, answer):
     conn.commit()
     conn.close()
 
-def fetch_player_stats():
+# Fetch player stats using nfl-data-py
+def get_player_stats(player_name):
     try:
-        with localconverter(default_converter + pandas2ri.converter):
-            player_stats = nflreadr.load_player_stats()  # Fetch data from R
-            print(f"Type of player_stats: {type(player_stats)}")  # Debugging
-            if isinstance(player_stats, pandas.DataFrame):
-                return player_stats  # Return as is if it's already a DataFrame
-            player_stats_df = pandas2ri.rpy2py(player_stats)  # Convert to pandas DataFrame
-        return player_stats_df
+        player_stats = nfl.import_player_stats(season=2023, stat_type="passing")  # Example for passing stats
+        player = player_stats[player_stats["player_name"].str.contains(player_name, case=False, na=False)]
+        if not player.empty:
+            return player.iloc[0].to_dict()
+        return "Player stats not found."
     except Exception as e:
         logging.error(f"Error fetching player stats: {e}")
-        return None
-
-
-# Fetch team stats using nflreadr
-def fetch_team_stats():
-    try:
-        with localconverter(default_converter + pandas2ri.converter):
-            team_stats = nflreadr.load_team_stats()  # Fetch data from R
-            team_stats_df = pandas2ri.rpy2py(team_stats)  # Convert to pandas DataFrame
-        return team_stats_df
-    except Exception as e:
-        logging.error(f"Error fetching team stats: {e}")
-        return None
-
-def get_team_stats(team_name):
-    team_stats = fetch_team_stats()
-    if team_stats is None:
-        return "Error accessing NFL team stats."
-
-    team = team_stats[team_stats["team"].str.contains(team_name, case=False, na=False)]
-    if not team.empty:
-        return team.iloc[0].to_dict()
-    return "Team stats not found."
-
-def get_player_stats(player_name):
-    player_stats = fetch_player_stats()
-    if player_stats is None:
         return "Error accessing NFL player stats."
 
-    player = player_stats[player_stats["player"].str.contains(player_name, case=False, na=False)]
-    if not player.empty:
-        return player.iloc[0].to_dict()
-    return "Player stats not found."
+# Fetch team stats using nfl-data-py
+def get_team_stats(team_name):
+    try:
+        team_stats = nfl.import_team_desc()  # Fetch team descriptions
+        team = team_stats[team_stats["team_name"].str.contains(team_name, case=False, na=False)]
+        if not team.empty:
+            return team.iloc[0].to_dict()
+        return "Team stats not found."
+    except Exception as e:
+        logging.error(f"Error fetching team stats: {e}")
+        return "Error accessing NFL team stats."
 
 # Web scraping function as a fallback
 def scrape_websites(question):
@@ -146,6 +108,10 @@ def scrape_websites(question):
 
     return potential_answers[:3]  # Return up to 3 potential answers
 
+@app.route("/")
+def home():
+    return "Welcome to the NFL AI Chatbot API!", 200
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
@@ -156,17 +122,15 @@ def chat():
     if cached_answer:
         return jsonify({"reply": cached_answer})
 
-    # Step 2: Fetch data via nflreadr
+    # Step 2: Fetch data via nfl-data-py
     if "team stats" in question.lower():
-        clear_cache()
         team_name = question.split("team stats")[-1].strip()
         return jsonify({"reply": get_team_stats(team_name)})
     if "player stats" in question.lower():
-        clear_cache()
         player_name = question.split("player stats")[-1].strip()
         return jsonify({"reply": get_player_stats(player_name)})
 
-    # Step 3: Web scrape if not in cache or nflverse
+    # Step 3: Web scrape if not in cache or nfl-data-py
     scraped_answers = scrape_websites(question)
     if scraped_answers:
         formatted_answers = "\n".join([f"- {answer}" for answer in scraped_answers])
