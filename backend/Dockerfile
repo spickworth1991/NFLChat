@@ -1,17 +1,21 @@
 # Base image with Python and R support
 FROM rocker/r-ver:4.2.2
 
-# Install Python and pip
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
-    python3-dev
+    python3-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev
 
 # Install R packages
 RUN R -e "install.packages(c('nflreadr'), repos='https://cran.rstudio.com/')"
 
 # Install Python packages
 COPY requirements.txt /app/requirements.txt
+RUN pip3 install setuptools wheel  # Ensure build tools are available
 RUN pip3 install -r /app/requirements.txt
 
 # Set the working directory
