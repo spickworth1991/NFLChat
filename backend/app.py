@@ -7,6 +7,7 @@ from difflib import SequenceMatcher
 import logging
 import string
 import pandas as pd
+from rpy2.robjects import pandas2ri
 from rpy2.robjects.packages import importr
 from rpy2.robjects import default_converter, pandas2ri
 from rpy2.robjects.conversion import localconverter
@@ -66,16 +67,19 @@ def save_to_cache(question, answer):
     conn.commit()
     conn.close()
 
-# Fetch player stats using nflreadr
 def fetch_player_stats():
     try:
         with localconverter(default_converter + pandas2ri.converter):
             player_stats = nflreadr.load_player_stats()  # Fetch data from R
+            print(f"Type of player_stats: {type(player_stats)}")  # Debugging
+            if isinstance(player_stats, pandas.DataFrame):
+                return player_stats  # Return as is if it's already a DataFrame
             player_stats_df = pandas2ri.rpy2py(player_stats)  # Convert to pandas DataFrame
         return player_stats_df
     except Exception as e:
         logging.error(f"Error fetching player stats: {e}")
         return None
+
 
 # Fetch team stats using nflreadr
 def fetch_team_stats():
@@ -146,9 +150,11 @@ def chat():
 
     # Step 2: Fetch data via nflreadr
     if "team stats" in question.lower():
+        nflreadr.clear_cache()
         team_name = question.split("team stats")[-1].strip()
         return jsonify({"reply": get_team_stats(team_name)})
     if "player stats" in question.lower():
+        nflreadr.clear_cache()
         player_name = question.split("player stats")[-1].strip()
         return jsonify({"reply": get_player_stats(player_name)})
 
