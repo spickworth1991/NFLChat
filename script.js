@@ -1,12 +1,15 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const sndBtn = document.getElementById('send-btn');
+  if (sndBtn) {
+    sndBtn.addEventListener('click', () => sendMessage(sndBtn)); // Attach click event
+  }
+});
+
+
 const sendBtn = document.getElementById("send-btn");
 const userInput = document.getElementById("user-input");
 const messages = document.getElementById("messages");
 
-sendBtn.addEventListener("click", () => sendMessage());
-
-userInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendMessage();
-});
 
 function sendMessage() {
   const userMessage = userInput.value.trim();
