@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 from difflib import SequenceMatcher
 import logging
+import string
 
 app = Flask(__name__)
 CORS(app)
@@ -25,6 +26,10 @@ def init_db():
     conn.commit()
     conn.close()
 
+# Normalize text by removing punctuation and converting to lowercase
+def normalize_text(text):
+    return text.lower().translate(str.maketrans('', '', string.punctuation))
+
 # Search the database for cached answers with fuzzy matching
 def search_cache(question):
     conn = sqlite3.connect("nfl_cache.db")
@@ -33,10 +38,11 @@ def search_cache(question):
     results = cursor.fetchall()
     conn.close()
 
+    normalized_question = normalize_text(question)
     matches = []
     for cached_question, cached_answer in results:
-        similarity = SequenceMatcher(None, question.lower(), cached_question.lower()).ratio()
-        if similarity > 0.7:  # Consider matches with similarity > 70%
+        similarity = SequenceMatcher(None, normalized_question, normalize_text(cached_question)).ratio()
+        if similarity > 0.5:  # Lowered threshold to 50%
             matches.append((similarity, cached_answer))
 
     matches.sort(reverse=True, key=lambda x: x[0])
