@@ -20,7 +20,7 @@ function sendMessage() {
   const searchingMessage = addMessage("Searching for an answer...", "bot");
 
   // Call the backend API
-  fetch("http://localhost:5000/chat", {
+  fetch("https://nfl-chat-bot.onrender.com", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: userMessage }),
