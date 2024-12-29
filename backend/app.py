@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
+from difflib import SequenceMatcher
 import logging
 
 app = Flask(__name__)
@@ -24,14 +25,22 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Search the database for cached answers
+# Search the database for cached answers with fuzzy matching
 def search_cache(question):
     conn = sqlite3.connect("nfl_cache.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT answer FROM cache WHERE question = ?", (question,))
-    result = cursor.fetchone()
+    cursor.execute("SELECT question, answer FROM cache")
+    results = cursor.fetchall()
     conn.close()
-    return result[0] if result else None
+
+    matches = []
+    for cached_question, cached_answer in results:
+        similarity = SequenceMatcher(None, question.lower(), cached_question.lower()).ratio()
+        if similarity > 0.7:  # Consider matches with similarity > 70%
+            matches.append((similarity, cached_answer))
+
+    matches.sort(reverse=True, key=lambda x: x[0])
+    return matches[0][1] if matches else None
 
 # Save a new question-answer pair to the database
 def save_to_cache(question, answer):
@@ -41,40 +50,47 @@ def save_to_cache(question, answer):
     conn.commit()
     conn.close()
 
-# Web scraping function
+# Web scraping function with improved keyword-based logic
 def scrape_websites(question):
     websites = [
         "https://www.nfl.com/news/",
         "https://www.espn.com/nfl/",
         "https://www.profootballnetwork.com/",
     ]
+    potential_answers = []
+    key_terms = set(question.lower().split())
+
     for website in websites:
         try:
             response = requests.get(website, timeout=5)
             soup = BeautifulSoup(response.text, "html.parser")
             paragraphs = soup.find_all("p")
+
             for paragraph in paragraphs:
-                if question.lower() in paragraph.text.lower():
-                    return paragraph.text
+                paragraph_text = paragraph.text.lower()
+                overlap = len(key_terms & set(paragraph_text.split()))
+                if overlap >= 3:  # At least 3 words must overlap
+                    potential_answers.append(paragraph.text)
         except Exception as e:
             logging.error(f"Error scraping {website}: {e}")
-    return None
+
+    return potential_answers[:3]  # Return up to 3 potential answers
 
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
     question = data.get("message", "").strip()
 
-    # Check cache first
+    # Check cache with fuzzy matching
     cached_answer = search_cache(question)
     if cached_answer:
         return jsonify({"reply": cached_answer})
 
     # Scrape websites if not in cache
-    scraped_answer = scrape_websites(question)
-    if scraped_answer:
-        save_to_cache(question, scraped_answer)
-        return jsonify({"reply": scraped_answer})
+    scraped_answers = scrape_websites(question)
+    if scraped_answers:
+        formatted_answers = "\n".join([f"- {answer}" for answer in scraped_answers])
+        return jsonify({"reply": f"I found some information on this topic:\n{formatted_answers}"})
 
     # Fallback response if no answer is found
     fallback_message = "I couldn't find an answer to that question. Try rephrasing it!"
