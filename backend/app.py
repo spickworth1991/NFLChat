@@ -8,7 +8,8 @@ import logging
 import string
 import pandas as pd
 from rpy2.robjects.packages import importr
-from rpy2.robjects import pandas2ri
+from rpy2.robjects import default_converter, pandas2ri
+from rpy2.robjects.conversion import localconverter
 
 # Activate pandas2ri conversion
 pandas2ri.activate()
@@ -68,8 +69,9 @@ def save_to_cache(question, answer):
 # Fetch player stats using nflreadr
 def fetch_player_stats():
     try:
-        player_stats = nflreadr.load_player_stats()
-        return pandas2ri.rpy2py(player_stats)  # Convert R DataFrame to pandas DataFrame
+        with localconverter(default_converter + pandas2ri.converter):
+            player_stats = nflreadr.load_player_stats()
+            return pandas2ri.rpy2py(player_stats)  # Convert R DataFrame to pandas DataFrame
     except Exception as e:
         logging.error(f"Error fetching player stats: {e}")
         return None
@@ -77,8 +79,9 @@ def fetch_player_stats():
 # Fetch team stats using nflreadr
 def fetch_team_stats():
     try:
-        team_stats = nflreadr.load_team_stats()
-        return pandas2ri.rpy2py(team_stats)  # Convert R DataFrame to pandas DataFrame
+        with localconverter(default_converter + pandas2ri.converter):
+            team_stats = nflreadr.load_team()
+            return pandas2ri.rpy2py(team_stats)  # Convert R DataFrame to pandas DataFrame
     except Exception as e:
         logging.error(f"Error fetching team stats: {e}")
         return None
