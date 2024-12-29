@@ -70,8 +70,9 @@ def save_to_cache(question, answer):
 def fetch_player_stats():
     try:
         with localconverter(default_converter + pandas2ri.converter):
-            player_stats = nflreadr.load_player_stats()
-            return pandas2ri.rpy2py(player_stats)  # Convert R DataFrame to pandas DataFrame
+            player_stats = nflreadr.load_player_stats()  # Fetch data from R
+            player_stats_df = pandas2ri.rpy2py(player_stats)  # Convert to pandas DataFrame
+        return player_stats_df
     except Exception as e:
         logging.error(f"Error fetching player stats: {e}")
         return None
@@ -80,8 +81,9 @@ def fetch_player_stats():
 def fetch_team_stats():
     try:
         with localconverter(default_converter + pandas2ri.converter):
-            team_stats = nflreadr.load_team()
-            return pandas2ri.rpy2py(team_stats)  # Convert R DataFrame to pandas DataFrame
+            team_stats = nflreadr.load_team_stats()  # Fetch data from R
+            team_stats_df = pandas2ri.rpy2py(team_stats)  # Convert to pandas DataFrame
+        return team_stats_df
     except Exception as e:
         logging.error(f"Error fetching team stats: {e}")
         return None
