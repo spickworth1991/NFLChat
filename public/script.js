@@ -88,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Create the container for the table and title
     const container = document.createElement('div');
+    const tableContainer = document.createElement('div');
+    tableContainer.classList.add('response-table-container'); // Wrapper for scrolling
   
     // Add the title
     const titleElement = document.createElement('h3');
@@ -123,20 +125,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const tableRow = document.createElement('tr');
       desiredOrder.forEach((key) => {
         const td = document.createElement('td');
-        let value = row[key];
-  
-        // Format numbers: maximum 2 decimal places, no trailing zeros
-        if (!isNaN(value) && typeof value === 'number') {
-          value = value % 1 ? parseFloat(value).toFixed(2).replace(/\.?0+$/, '') : parseInt(value, 10);
-        }
-  
-        td.textContent = value === null || value === undefined ? 'N/A' : value;
+        // Format numbers to a max of 2 decimal places or no decimals if unnecessary
+        const value = row[key];
+        td.textContent =
+          value === null || value === undefined
+            ? 'N/A'
+            : typeof value === 'number' && value % 1 !== 0
+            ? value.toFixed(2)
+            : value;
         tableRow.appendChild(td);
       });
       table.appendChild(tableRow);
     });
   
-    container.appendChild(table);
-    return container.outerHTML;
+    tableContainer.appendChild(table); // Add the table to the wrapper
+    container.appendChild(tableContainer); // Add the wrapper to the container
+  
+    return container.outerHTML; // Return the HTML of the entire structure
   }
+  
 });

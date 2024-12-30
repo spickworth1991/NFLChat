@@ -126,9 +126,52 @@ footer {
   color: #fff;
   cursor: pointer;
 }
+/* Responsive Table Styling */
+.response-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  overflow-x: auto;
+  display: block; /* Ensures the table becomes scrollable on small screens */
+}
 
-/* Styles for touch devices (cursor detection) */
+.response-table th, 
+.response-table td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+  white-space: nowrap; /* Prevents text from wrapping */
+}
+
+.response-table th {
+  background-color: #f1f1f1;
+  font-weight: bold;
+}
+
+.response-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.response-table-container {
+  max-width: 100%;
+  overflow-x: auto; /* Enables horizontal scrolling for large tables */
+}
+
+/* Ensure table does not break the layout on touch devices */
 @media (hover: none) {
+  .response-table-container {
+    margin-bottom: 10px;
+  }
+
+  .response-table th, 
+  .response-table td {
+    font-size: 0.9em; /* Slightly smaller text for touch devices */
+  }
+
+  .response-table {
+    min-width: 600px; /* Force table to be scrollable if too wide */
+  }
+
   #layout-container {
     flex-direction: column;
     align-items: stretch;
