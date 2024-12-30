@@ -187,7 +187,7 @@ footer {
   #chat-container {
     width: 100%;
     min-width: unset;
-    max-width: unset;
+    max-width: 600px;
     height: auto;
     flex: none;
   }
