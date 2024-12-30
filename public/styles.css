@@ -9,9 +9,51 @@ body {
   background-color: #f4f4f9;
 }
 
+/* Layout for the container */
+#layout-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  padding: 10px;
+  background-color: #f4f4f9;
+}
+
+/* Sidebar Styling */
+#sidebar {
+  width: 150px;
+  background-color: #e9ecef;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  margin-right: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#sidebar h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+  text-align: center;
+  color: #2a9df4;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar ul li {
+  margin: 10px 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+
 #chat-container {
-  width: 800px;
-  height: 600px;
+  flex: 1;
+  min-width: 800px;
+  max-width: 800px;
+  height: 800px;
   display: flex;
   flex-direction: column;
   border: 2px solid #333;
@@ -19,6 +61,7 @@ body {
   background-color: #fff;
   overflow: hidden;
 }
+
 
 header {
   background-color: #2a9df4;
@@ -36,6 +79,10 @@ header {
 }
 
 #messages {
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;

@@ -88,9 +88,12 @@ def get_weekly_player_data(year, player_name):
         if player_data.empty:
             return f"No data found for player '{player_name}' in {year}. Please check the player name and try again."
 
+        # Columns for title 
+        title_columns = ["player_display_name", "position", "recent_team"]
+
         # Columns to display
         columns_to_display = [
-            "player_display_name", "position", "recent_team", "week", "opponent_team",
+            "week", "opponent_team",
             "completions", "attempts", "passing_yards", "passing_tds", "interceptions", "sacks",
             "sack_yards", "sack_fumbles", "sack_fumbles_lost", "passing_air_yards",
             "passing_yards_after_catch", "passing_first_downs", "passing_epa", "passing_2pt_conversions",
@@ -106,20 +109,32 @@ def get_weekly_player_data(year, player_name):
         # Filter relevant columns
         filtered_data = player_data[columns_to_display]
 
-        # Remove columns where all values are NaN or 0
-        filtered_data = filtered_data.loc[:, (filtered_data.notna().any() & (filtered_data != 0).any())]
+        # Replace NaN with 0 for consistent evaluation
+        filtered_data = filtered_data.fillna(0)
 
-        # Remove rows with all NaN or 0 values
-        filtered_data = filtered_data[~((filtered_data.isna() | (filtered_data == 0)).all(axis=1))]
+        # Format numeric values
+        for col in filtered_data.select_dtypes(include=['float', 'int']).columns:
+            filtered_data[col] = filtered_data[col].apply(lambda x: f"{x:.2f}".rstrip('0').rstrip('.') if x % 1 else str(int(x)))
 
-        # Replace remaining NaN with None (JSON-friendly) for final output
-        filtered_data = filtered_data.where(pd.notna(filtered_data), None)
+        # Drop columns where all values are 0
+        filtered_data = filtered_data.loc[:, (filtered_data != '0').any(axis=0)]
 
-        # Log the final filtered data
-        logging.info(f"Filtered data for player '{player_name}': {filtered_data.head()}")
+        # Rearrange columns: fixed columns first, then the rest
+        fixed_columns = ["week", "opponent_team", "fantasy_points", "fantasy_points_ppr"]
+        other_columns = [col for col in filtered_data.columns if col not in fixed_columns]
+        ordered_columns = fixed_columns + other_columns
+        filtered_data = filtered_data[ordered_columns]
 
-        # Convert to a list of dictionaries for output
-        response_data = sanitize_json(filtered_data.to_dict(orient="records"))
+        # Extract header/title info
+        filtered_data2 = player_data[title_columns].drop_duplicates()
+        player_info = filtered_data2.iloc[0]
+        title = f"{player_info['player_display_name']} - {player_info['position']} - {player_info['recent_team']}"
+
+        # Convert to a list of dictionaries for JSON response
+        response_data = {
+            "title": title,
+            "data": filtered_data.to_dict(orient="records"),
+        }
         logging.info(f"Final JSON response for '{player_name}': {response_data}")
 
         return response_data

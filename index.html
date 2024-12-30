@@ -7,17 +7,30 @@
   <link rel="stylesheet" href="/public/styles.css">
 </head>
 <body>
-  <div id="chat-container">
-    <header>
-      <h1>NFL AI Chatbot</h1>
-    </header>
-    <main id="chat-window">
-      <div id="messages"></div>
-    </main>
-    <footer>
-      <input type="text" id="user-input" placeholder="Ask me anything about the NFL...">
-      <button id="send-btn">Send</button>
-    </footer>
+  <div id="layout-container">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <h2>Legend</h2>
+      <ul>
+        <li><strong>1. Player Stats &lt;Player Name&gt;</strong> - Stats for searched player from 2023 Season</li>
+        <li><strong>2. Weekly Data</strong> - Follow prompts to get weekly stats for searched player within searched season.</li>
+        <li><strong>3. Random Questions</strong> - Some random questions may return correct answers. This is a work in progress.</li>
+      </ul>
+    </aside>
+
+    <!-- Chat Container -->
+    <div id="chat-container">
+      <header>
+        <h1>NFL AI Chatbot</h1>
+      </header>
+      <main id="chat-window">
+        <div id="messages"></div>
+      </main>
+      <footer>
+        <input type="text" id="user-input" placeholder="Ask me anything about the NFL...">
+        <button id="send-btn">Send</button>
+      </footer>
+    </div>
   </div>
   <script src="/public/script.js" defer></script>
   <link rel="icon" href="favicon.ico">
