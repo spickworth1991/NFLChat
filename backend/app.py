@@ -10,7 +10,7 @@ import pandas as pd
 import nfl_data_py as nfl
 
 app = Flask(__name__)
-CORS(app, resources={r"/https://nfl-chat-bot.vercel.app": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -61,14 +61,22 @@ def save_to_cache(question, answer):
 # Fetch player stats using nfl-data-py
 def get_player_stats(player_name):
     try:
-        player_stats = nfl.import_player_stats(season=2023, stat_type="passing")  # Example for passing stats
-        player = player_stats[player_stats["player_name"].str.contains(player_name, case=False, na=False)]
-        if not player.empty:
-            return player.iloc[0].to_dict()
-        return "Player stats not found."
+        player_stats = nfl.import_seasonal_pfr("pass", [2023])  # Fetch all available stats
+        player = player_stats[player_stats["player"].str.contains(player_name, case=False, na=False)]
+        if player.empty:
+            return f"No stats found for player '{player_name}'."
+
+        stats = player.iloc[0].to_dict()
+        filtered_stats = {key: value for key, value in stats.items() if pd.notnull(value)}
+
+        # Format stats into a multi-line string
+        formatted_stats = "\n".join([f"{key}: {value}" for key, value in filtered_stats.items()])
+        return formatted_stats
     except Exception as e:
         logging.error(f"Error fetching player stats: {e}")
-        return "Error accessing NFL player stats."
+        return f"An error occurred while fetching stats for '{player_name}'."
+
+
 
 # Fetch team stats using nfl-data-py
 def get_team_stats(team_name):
@@ -128,7 +136,11 @@ def chat():
         return jsonify({"reply": get_team_stats(team_name)})
     if "player stats" in question.lower():
         player_name = question.split("player stats")[-1].strip()
-        return jsonify({"reply": get_player_stats(player_name)})
+        logging.info(player_name)
+        stats = get_player_stats(player_name)
+        if isinstance(stats, dict):  # Ensure stats are properly formatted
+            return jsonify({"reply": stats})
+        return jsonify({"reply": stats})  # For error messages or fallback strings
 
     # Step 3: Web scrape if not in cache or nfl-data-py
     scraped_answers = scrape_websites(question)

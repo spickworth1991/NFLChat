@@ -27,29 +27,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchingMessage = addMessage('Searching for an answer...', 'bot');
 
     // Call the backend API
-    fetch('https://nfl-chat-bot.onrender.com/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage }),
+    fetch('http://127.0.0.1:5000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        searchingMessage.remove(); // Remove the "searching" message
-        addMessage(data.reply, 'bot');
-      })
-      .catch(() => {
-        searchingMessage.remove();
-        addMessage('Sorry, I couldn\'t process your request. Try again later.', 'bot');
-      });
-  }
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            searchingMessage.remove(); // Remove the "searching" message
+            if (data.reply) {
+                if (data.reply.includes("\n")) {
+                    // Wrap multi-line replies in a <pre> tag for better readability
+                    const preformattedMessage = `<pre>${data.reply}</pre>`;
+                    addMessage(preformattedMessage, 'bot', true); // Pass as HTML
+                } else {
+                    addMessage(data.reply, 'bot'); // For single-line responses
+                }
+            } else {
+                addMessage("I couldn't find an answer. Please try again.", 'bot');
+            }
+        })
+        .catch((error) => {
+            searchingMessage.remove();
+            console.error("Error in sendMessage:", error);
+            addMessage("Sorry, I couldn't process your request. Try again later.", 'bot');
+        });
+}
 
-  function addMessage(text, sender) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('message', sender);
-    messageDiv.textContent = text;
-    messages.appendChild(messageDiv);
-    messages.scrollTop = messages.scrollHeight;
-    return messageDiv; // Ensure the messageDiv is returned
+
+
+function addMessage(text, sender, isHTML = false) {
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('message', sender);
+  if (isHTML) {
+      messageDiv.innerHTML = text; // Safely insert HTML content
+  } else {
+      messageDiv.textContent = text; // Insert plain text
   }
+  messages.appendChild(messageDiv);
+  messages.scrollTop = messages.scrollHeight;
+  return messageDiv; // Ensure the created messageDiv is returned
+}
+
   
 });
