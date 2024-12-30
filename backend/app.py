@@ -8,12 +8,20 @@ import logging
 import string
 import pandas as pd
 import nfl_data_py as nfl
+import json
+
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+query_context = {}
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
+
+def sanitize_json(data):
+    return json.loads(json.dumps(data, default=lambda x: None))
 
 # Initialize the database
 def init_db():
@@ -57,6 +65,80 @@ def save_to_cache(question, answer):
     cursor.execute("INSERT OR REPLACE INTO cache (question, answer) VALUES (?, ?)", (question, answer))
     conn.commit()
     conn.close()
+
+# Fetch play-by-play data
+def get_play_by_play(years, columns=None):
+    try:
+        pbp_data = nfl.import_pbp_data(years, columns)
+        return pbp_data.head(10).to_dict(orient="records")  # Limit to first 10 rows for display
+    except Exception as e:
+        logging.error(f"Error fetching play-by-play data: {e}")
+        return "Error accessing play-by-play data."
+
+def get_weekly_player_data(year, player_name):
+    try:
+        # Load the dataset for the specified year
+        weekly_data = nfl.import_weekly_data([year])
+        logging.info(f"Dataset loaded for year {year}: {weekly_data.head()}")
+
+        # Filter for the specific player using the correct column
+        player_data = weekly_data[weekly_data["player_display_name"].str.contains(player_name, case=False, na=False)]
+        logging.info(f"Player data found for '{player_name}': {player_data.head()}")
+
+        if player_data.empty:
+            return f"No data found for player '{player_name}' in {year}. Please check the player name and try again."
+
+        # Columns to display
+        columns_to_display = [
+            "player_display_name", "position", "recent_team", "week", "opponent_team",
+            "completions", "attempts", "passing_yards", "passing_tds", "interceptions", "sacks",
+            "sack_yards", "sack_fumbles", "sack_fumbles_lost", "passing_air_yards",
+            "passing_yards_after_catch", "passing_first_downs", "passing_epa", "passing_2pt_conversions",
+            "pacr", "dakota", "carries", "rushing_yards", "rushing_tds", "rushing_fumbles",
+            "rushing_fumbles_lost", "rushing_first_downs", "rushing_epa", "rushing_2pt_conversions",
+            "receptions", "targets", "receiving_yards", "receiving_tds", "receiving_fumbles",
+            "receiving_fumbles_lost", "receiving_air_yards", "receiving_yards_after_catch",
+            "receiving_first_downs", "receiving_epa", "receiving_2pt_conversions", "racr",
+            "target_share", "air_yards_share", "wopr", "special_teams_tds", "fantasy_points",
+            "fantasy_points_ppr"
+        ]
+
+        # Filter relevant columns
+        filtered_data = player_data[columns_to_display]
+
+        # Remove columns where all values are NaN or 0
+        filtered_data = filtered_data.loc[:, (filtered_data.notna().any() & (filtered_data != 0).any())]
+
+        # Remove rows with all NaN or 0 values
+        filtered_data = filtered_data[~((filtered_data.isna() | (filtered_data == 0)).all(axis=1))]
+
+        # Replace remaining NaN with None (JSON-friendly) for final output
+        filtered_data = filtered_data.where(pd.notna(filtered_data), None)
+
+        # Log the final filtered data
+        logging.info(f"Filtered data for player '{player_name}': {filtered_data.head()}")
+
+        # Convert to a list of dictionaries for output
+        response_data = sanitize_json(filtered_data.to_dict(orient="records"))
+        logging.info(f"Final JSON response for '{player_name}': {response_data}")
+
+        return response_data
+    except Exception as e:
+        logging.error(f"Error fetching weekly data for player: {e}")
+        return f"An error occurred while fetching data for '{player_name}' in {year}."
+
+
+
+
+# Fetch seasonal data
+def get_seasonal_data(years, s_type="REG"):
+    try:
+        seasonal_data = nfl.import_seasonal_data(years, s_type)
+        return seasonal_data.head(10).to_dict(orient="records")  # Limit to first 10 rows for display
+    except Exception as e:
+        logging.error(f"Error fetching seasonal data: {e}")
+        return "Error accessing seasonal data."
+
 
 # Fetch player stats using nfl-data-py
 def get_player_stats(player_name):
@@ -125,30 +207,98 @@ def chat():
     data = request.get_json()
     question = data.get("message", "").strip()
 
+    logging.info(f"Received question: {question}")
+    if "current_query" in query_context:
+        context = query_context.get("current_query", {})  # Ensure context is safely retrieved
+
+        # Handle missing player name
+        if "player_name" not in context:
+            query_context["current_query"]["player_name"] = question
+            return jsonify({"reply": "Got it! Now specify the year."})
+
+        # Handle missing year
+        if "year" not in context:
+            if question.isdigit():
+                query_context["current_query"]["year"] = int(question)
+                player_name = context["player_name"]
+                year = context["year"]
+                query_context.pop("current_query")  # Clear context after completion
+                return jsonify({"reply": get_weekly_player_data(year, player_name)})
+            else:
+                return jsonify({"reply": "Please provide a valid year."})
+
+
+    # Check if the question matches an ongoing query context
+    if question.isdigit() and "current_query" in query_context:
+        years = [int(question)]
+        current_query = query_context.pop("current_query")
+
+        if current_query == "play_by_play":
+            logging.info(f"Fetching play-by-play data for years: {years}")
+            return jsonify({"reply": get_play_by_play(years)})
+        
+        if current_query == "seasonal data":
+            logging.info(f"Fetching seasonal data for years: {years}")
+            return jsonify({"reply": get_seasonal_data(years)})
+
     # Step 1: Check cache
     cached_answer = search_cache(question)
     if cached_answer:
+        logging.info("Answer found in cache.")
         return jsonify({"reply": cached_answer})
 
     # Step 2: Fetch data via nfl-data-py
     if "team stats" in question.lower():
         team_name = question.split("team stats")[-1].strip()
+        logging.info(f"Fetching team stats for: {team_name}")
         return jsonify({"reply": get_team_stats(team_name)})
+
     if "player stats" in question.lower():
         player_name = question.split("player stats")[-1].strip()
-        logging.info(player_name)
+        logging.info(f"Fetching player stats for: {player_name}")
         stats = get_player_stats(player_name)
         if isinstance(stats, dict):  # Ensure stats are properly formatted
+            logging.info("Player stats successfully fetched.")
             return jsonify({"reply": stats})
+        logging.warning("Player stats returned an error or no data.")
         return jsonify({"reply": stats})  # For error messages or fallback strings
+
+    # Handle play-by-play data query
+    # Handle specific queries
+    if "weekly data" in question.lower():
+        query_context["current_query"] = {"type": "weekly_data"}
+        logging.info("Prompting for player name.")
+        return jsonify({"reply": "Please specify the player name."})
+    if "play-by-play" in question.lower():
+        query_context["current_query"] = "play_by_play"
+        logging.info("Prompting for play-by-play years.")
+        return jsonify({"reply": "For play-by-play data, specify years like '2010-2020'."})
+    
+    # Handle seasonal data query
+    if "seasonal data" in question.lower():
+        query_context["current_query"] = "seasonal data"
+        logging.info("Prompting for seasonal data years.")
+        return jsonify({"reply": "For seasonal data, specify years like '2020-2023'."})
+
+    # Parse year ranges dynamically
+    if any(keyword in question.lower() for keyword in ["years", "season", "data"]):
+        try:
+            years = list(map(int, question.split(" ")[-1].split("-")))
+            logging.info(f"Fetching play-by-play data for years: {years}")
+            return jsonify({"reply": get_play_by_play(years)})
+        except Exception as e:
+            logging.error(f"Error parsing years: {e}")
+            return jsonify({"reply": "Invalid year format. Provide years like '2010-2020'."})
 
     # Step 3: Web scrape if not in cache or nfl-data-py
     scraped_answers = scrape_websites(question)
     if scraped_answers:
+        logging.info(f"Web scraping returned answers: {scraped_answers}")
         formatted_answers = "\n".join([f"- {answer}" for answer in scraped_answers])
         return jsonify({"reply": f"I found some information on this topic:\n{formatted_answers}"})
 
     # Fallback response if no answer is found
+    logging.warning("No suitable response found; returning fallback.")
     fallback_message = "I couldn't find an answer to that question. Try rephrasing it!"
     save_to_cache(question, fallback_message)
     return jsonify({"reply": fallback_message})
