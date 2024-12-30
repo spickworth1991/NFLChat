@@ -165,11 +165,11 @@ footer {
 
   .response-table th, 
   .response-table td {
-    font-size: 0.9em; /* Slightly smaller text for touch devices */
+    font-size: 0.8em; /* Slightly smaller text for touch devices */
   }
 
   .response-table {
-    min-width: 600px; /* Force table to be scrollable if too wide */
+    min-width: 400px; /* Force table to be scrollable if too wide */
   }
 
   #layout-container {
@@ -187,7 +187,7 @@ footer {
   #chat-container {
     width: 100%;
     min-width: unset;
-    max-width: 600px;
+    max-width: 500px;
     height: auto;
     flex: none;
   }
