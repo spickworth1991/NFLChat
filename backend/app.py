@@ -269,7 +269,7 @@ def chat():
         return jsonify({"reply": get_team_stats(team_name)})
 
     if "Player stats" in question.lower():
-        player_name = question.split("Player stats")[-1].strip()
+        player_name = question.split("qb stats")[-1].strip()
         logging.info(f"Fetching player stats for: {player_name}")
         stats = get_player_stats(player_name)
         if isinstance(stats, dict):  # Ensure stats are properly formatted
