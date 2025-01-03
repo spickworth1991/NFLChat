@@ -79,11 +79,11 @@ def get_weekly_player_data(year, player_name):
     try:
         # Load the dataset for the specified year
         weekly_data = nfl.import_weekly_data([year])
-        logging.info(f"Dataset loaded for year {year}: {weekly_data.head()}")
+        #logging.info(f"Dataset loaded for year {year}: {weekly_data.head()}")
 
         # Filter for the specific player using the correct column
         player_data = weekly_data[weekly_data["player_display_name"].str.contains(player_name, case=False, na=False)]
-        logging.info(f"Player data found for '{player_name}': {player_data.head()}")
+        #logging.info(f"Player data found for '{player_name}': {player_data.head()}")
 
         if player_data.empty:
             return f"No data found for player '{player_name}' in {year}. Please check the player name and try again."
@@ -268,8 +268,8 @@ def chat():
         logging.info(f"Fetching team stats for: {team_name}")
         return jsonify({"reply": get_team_stats(team_name)})
 
-    if "player stats" in question.lower():
-        player_name = question.split("player stats")[-1].strip()
+    if "Player stats" in question.lower():
+        player_name = question.split("Player stats")[-1].strip()
         logging.info(f"Fetching player stats for: {player_name}")
         stats = get_player_stats(player_name)
         if isinstance(stats, dict):  # Ensure stats are properly formatted

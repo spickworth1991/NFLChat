@@ -2,10 +2,10 @@ import nfl_data_py as nfl
 
 # Specify the years and columns you want to pull data for
 years = [2024]  # Replace with the years you need
-columns = ['player_display_name', 'passing_yards', 'rushing_yards']  # Replace with your desired columns
+s_type = 'REG'  # Replace with your desired columns
 
 # Import the weekly data
-weekly_data = nfl.import_weekly_data(years=years, columns=columns, downcast=True)
+seasonal_data = nfl.import_seasonal_data(years, s_type)
 
 # Print the data
-print(weekly_data)
+print(seasonal_data.columns)
