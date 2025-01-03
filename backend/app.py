@@ -268,7 +268,7 @@ def chat():
         logging.info(f"Fetching team stats for: {team_name}")
         return jsonify({"reply": get_team_stats(team_name)})
 
-    if "Player stats" in question.lower():
+    if "qb stats" in question.lower():
         player_name = question.split("qb stats")[-1].strip()
         logging.info(f"Fetching player stats for: {player_name}")
         stats = get_player_stats(player_name)
