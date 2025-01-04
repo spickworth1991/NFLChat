@@ -66,14 +66,7 @@ def save_to_cache(question, answer):
     conn.commit()
     conn.close()
 
-# Fetch play-by-play data
-def get_play_by_play(years, columns=None):
-    try:
-        pbp_data = nfl.import_pbp_data(years, columns)
-        return pbp_data.head(10).to_dict(orient="records")  # Limit to first 10 rows for display
-    except Exception as e:
-        logging.error(f"Error fetching play-by-play data: {e}")
-        return "Error accessing play-by-play data."
+
 
 def get_weekly_player_data(year, player_name):
     try:
@@ -175,43 +168,6 @@ def get_player_stats(player_name):
 
 
 
-# Fetch team stats using nfl-data-py
-def get_team_stats(team_name):
-    try:
-        team_stats = nfl.import_team_desc()  # Fetch team descriptions
-        team = team_stats[team_stats["team_name"].str.contains(team_name, case=False, na=False)]
-        if not team.empty:
-            return team.iloc[0].to_dict()
-        return "Team stats not found."
-    except Exception as e:
-        logging.error(f"Error fetching team stats: {e}")
-        return "Error accessing NFL team stats."
-
-# Web scraping function as a fallback
-def scrape_websites(question):
-    websites = [
-        "https://www.nfl.com/news/",
-        "https://www.espn.com/nfl/",
-        "https://www.profootballnetwork.com/",
-    ]
-    potential_answers = []
-    key_terms = set(question.lower().split())
-
-    for website in websites:
-        try:
-            response = requests.get(website, timeout=5)
-            soup = BeautifulSoup(response.text, "html.parser")
-            paragraphs = soup.find_all("p")
-
-            for paragraph in paragraphs:
-                paragraph_text = paragraph.text.lower()
-                overlap = len(key_terms & set(paragraph_text.split()))
-                if overlap >= 3:  # At least 3 words must overlap
-                    potential_answers.append(paragraph.text)
-        except Exception as e:
-            logging.error(f"Error scraping {website}: {e}")
-
-    return potential_answers[:3]  # Return up to 3 potential answers
 
 @app.route("/")
 def home():
@@ -247,27 +203,16 @@ def chat():
     if question.isdigit() and "current_query" in query_context:
         years = [int(question)]
         current_query = query_context.pop("current_query")
-
-        if current_query == "play_by_play":
-            logging.info(f"Fetching play-by-play data for years: {years}")
-            return jsonify({"reply": get_play_by_play(years)})
         
         if current_query == "seasonal data":
             logging.info(f"Fetching seasonal data for years: {years}")
             return jsonify({"reply": get_seasonal_data(years)})
-
-    # Step 1: Check cache
+        
+    # Check cache
     cached_answer = search_cache(question)
     if cached_answer:
         logging.info("Answer found in cache.")
         return jsonify({"reply": cached_answer})
-
-    # Step 2: Fetch data via nfl-data-py
-    if "team stats" in question.lower():
-        team_name = question.split("team stats")[-1].strip()
-        logging.info(f"Fetching team stats for: {team_name}")
-        return jsonify({"reply": get_team_stats(team_name)})
-
     if "qb stats" in question.lower():
         player_name = question.split("qb stats")[-1].strip()
         logging.info(f"Fetching player stats for: {player_name}")
@@ -277,41 +222,20 @@ def chat():
             return jsonify({"reply": stats})
         logging.warning("Player stats returned an error or no data.")
         return jsonify({"reply": stats})  # For error messages or fallback strings
-
-    # Handle play-by-play data query
-    # Handle specific queries
     if "weekly data" in question.lower():
-        query_context["current_query"] = {"type": "weekly_data"}
+        query_context["current_query"] = {"type": "weekly data"}
         logging.info("Prompting for player name.")
         return jsonify({"reply": "Please specify the player name."})
     if "play-by-play" in question.lower():
         query_context["current_query"] = "play_by_play"
         logging.info("Prompting for play-by-play years.")
         return jsonify({"reply": "For play-by-play data, specify years like '2010-2020'."})
-    
-    # Handle seasonal data query
     if "seasonal data" in question.lower():
-        query_context["current_query"] = "seasonal data"
+        query_context["current_query"] = {"type": "seasonal data"}
         logging.info("Prompting for seasonal data years.")
         return jsonify({"reply": "For seasonal data, specify years like '2020-2023'."})
 
-    # Parse year ranges dynamically
-    if any(keyword in question.lower() for keyword in ["years", "season", "data"]):
-        try:
-            years = list(map(int, question.split(" ")[-1].split("-")))
-            logging.info(f"Fetching play-by-play data for years: {years}")
-            return jsonify({"reply": get_play_by_play(years)})
-        except Exception as e:
-            logging.error(f"Error parsing years: {e}")
-            return jsonify({"reply": "Invalid year format. Provide years like '2010-2020'."})
-
-    # Step 3: Web scrape if not in cache or nfl-data-py
-    scraped_answers = scrape_websites(question)
-    if scraped_answers:
-        logging.info(f"Web scraping returned answers: {scraped_answers}")
-        formatted_answers = "\n".join([f"- {answer}" for answer in scraped_answers])
-        return jsonify({"reply": f"I found some information on this topic:\n{formatted_answers}"})
-
+   
     # Fallback response if no answer is found
     logging.warning("No suitable response found; returning fallback.")
     fallback_message = "I couldn't find an answer to that question. Try rephrasing it!"
