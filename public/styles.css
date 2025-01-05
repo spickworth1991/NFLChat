@@ -192,7 +192,7 @@ footer {
     width: 99%;
     min-width: 99%;
     max-width: 99%;
-    height: calc(100vh - 500px);
+    height: calc(100vh - 400px);
     flex: none;
     display: flex;
     flex-direction: column;
@@ -238,7 +238,7 @@ footer {
 
   .response-table th,
   .response-table td {
-    font-size: 0.85em; /* Slightly smaller font for mobile */
+    font-size: 0.65em; /* Slightly smaller font for mobile */
     padding: 5px;
   }
 }
