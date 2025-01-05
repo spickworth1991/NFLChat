@@ -190,7 +190,7 @@ footer {
 
   #chat-container {
     width: 99%;
-    margin:10px 0;
+    margin:100px 0;
     min-width: 99%;
     max-width: 99%;
     height: calc(100vh - 450px);
