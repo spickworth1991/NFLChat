@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function scrollToBottom() {
-    const chatContainer = document.getElementById('chat-window');
+    const chatContainer = document.getElementById('chat-container');
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
