@@ -164,12 +164,13 @@ footer {
   background-color: #f9f9f9;
 }
 
-/* Mobile Optimization */
 @media (max-width: 768px) {
   /* Adjust layout for smaller screens */
   #layout-container {
     flex-direction: column;
     align-items: stretch;
+    height: 100vh; /* Ensure it fits the viewport height */
+    overflow: hidden; /* Prevent content from exceeding the screen */
   }
 
   #sidebar {
@@ -182,7 +183,7 @@ footer {
   #chat-container {
     width: 100%;
     max-width: 100%;
-    height: 100vh; /* Keep it fully visible */
+    height: 100vh; /* Ensure the chat container fills the viewport */
     flex: none;
     display: flex;
     flex-direction: column;
@@ -192,18 +193,21 @@ footer {
   header {
     font-size: 1.2em;
     padding: 8px;
+    flex-shrink: 0; /* Prevent header from resizing */
   }
 
   #messages {
-    flex: 1; /* Allow the messages to grow within available space */
+    flex: 1; /* Allow the messages section to grow/shrink dynamically */
     max-height: calc(100vh - 150px); /* Deduct space for header and footer */
-    overflow-y: auto;
+    overflow-y: auto; /* Enable scrolling for long chat messages */
     padding: 10px;
     background-color: #f9f9f9;
+    box-sizing: border-box;
   }
 
   footer {
     flex-shrink: 0;
+    display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 10px;
@@ -224,12 +228,23 @@ footer {
 
   .response-table-container {
     max-height: 200px; /* Further restrict height for smaller screens */
+    overflow-y: auto; /* Enable scrolling for tall tables */
+    overflow-x: auto; /* Enable horizontal scrolling for wide tables */
     margin-bottom: 10px;
+  }
+
+  .response-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto; /* Adjust column sizes automatically */
   }
 
   .response-table th,
   .response-table td {
     font-size: 0.85em; /* Slightly smaller font for mobile */
     padding: 5px;
+    text-align: left;
+    word-wrap: break-word; /* Prevent overflow of long text */
   }
 }
+
