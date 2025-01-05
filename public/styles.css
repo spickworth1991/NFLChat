@@ -193,7 +193,7 @@ footer {
     min-width: 99%;
     max-width: 99%;
     max-height: 300px;
-    height: calc(100vh - 60px); /* Adjust height to account for footer */
+    height: calc(100vh - 300px); /* Adjust height to account for footer */
     flex: none;
     display: center;
     flex-direction: column;
