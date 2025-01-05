@@ -122,14 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Add more mappings as needed for your column names
     };
   
-
-
-
-
-
-
-
-    
     const container = document.createElement('div');
     const tableContainer = document.createElement('div');
     tableContainer.classList.add('response-table-container');
