@@ -89,40 +89,50 @@ document.addEventListener('DOMContentLoaded', () => {
   function generateTableHTML(data, title, columnOrder = null) {
     if (!data || data.length === 0) return '<p>No data available.</p>';
   
-    // Create the container for the table and title
+    // Mapping column names to user-friendly display names
+    const columnHeaderMap = {
+      week: "Week",
+      opponent_team: "Opponent",
+      fantasy_points: "Fantasy Points",
+      fantasy_points_ppr: "Fantasy Points (PPR)",
+      completions: "Completions",
+      attempts: "Attempts",
+      passing_yards: "Passing Yards",
+      passing_tds: "Passing TDs",
+      interceptions: "Interceptions",
+      carries: "Carries",
+      rushing_yards: "Rushing Yards",
+      rushing_tds: "Rushing TDs",
+      receptions: "Receptions",
+      targets: "Targets",
+      receiving_yards: "Receiving Yards",
+      receiving_tds: "Receiving TDs",
+      // Add more mappings as needed for your column names
+    };
+  
     const container = document.createElement('div');
     const tableContainer = document.createElement('div');
-    tableContainer.classList.add('response-table-container'); // Wrapper for scrolling
+    tableContainer.classList.add('response-table-container');
   
-    // Add the title
     const titleElement = document.createElement('h3');
     titleElement.textContent = title;
     container.appendChild(titleElement);
   
-    // Determine the columns to display based on the data and columnOrder
     const columns = Object.keys(data[0]);
     let desiredOrder = columnOrder ? columnOrder.filter(col => columns.includes(col)) : columns;
+    desiredOrder = [...desiredOrder, ...columns.filter(key => !desiredOrder.includes(key))];
   
-    // Include any columns not explicitly listed in the desiredOrder at the end
-    desiredOrder = [
-      ...desiredOrder,
-      ...columns.filter((key) => !desiredOrder.includes(key)),
-    ];
-  
-    // Create the table
     const table = document.createElement('table');
     table.classList.add('response-table');
   
-    // Create table header
     const headerRow = document.createElement('tr');
     desiredOrder.forEach((key) => {
       const th = document.createElement('th');
-      th.textContent = key.replace(/_/g, ' '); // Replace underscores with spaces for readability
+      th.textContent = columnHeaderMap[key] || key.replace(/_/g, ' '); // Use mapped name or fallback to formatted key
       headerRow.appendChild(th);
     });
     table.appendChild(headerRow);
   
-    // Create table rows
     data.forEach((row) => {
       const tableRow = document.createElement('tr');
       desiredOrder.forEach((key) => {
@@ -138,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     return container.innerHTML;
   }
+  
   
   // Example usage for weekly data
   const weeklyColumnOrder = [
