@@ -192,7 +192,7 @@ footer {
     width: 99%;
     min-width: 99%;
     max-width: 99%;
-    max-height: calc(100vh+300px); /* Keep it fully visible */
+    height: calc(100vh+300px); /* Keep it fully visible */
     flex: none;
     display: center;
     flex-direction: column;
