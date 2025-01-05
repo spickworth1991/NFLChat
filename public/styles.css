@@ -29,7 +29,6 @@ body {
   background-color: #e9ecef;
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 10px;
   margin-right: 10px;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -202,7 +201,6 @@ footer {
 
   header {
     font-size: .7em;
-    padding: 1px;
   }
 
   #messages {
