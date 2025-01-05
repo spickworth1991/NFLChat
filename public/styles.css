@@ -192,13 +192,14 @@ footer {
     width: 99%;
     min-width: 99%;
     max-width: 99%;
-    max-height: 650px;
+    max-height: 600px;
     height: 300vh; /* Keep it fully visible */
     flex: none;
     display: center;
     flex-direction: column;
     flex-basis: auto;
     box-sizing: border-box;
+    overflow-y: auto; /* Enable vertical scrolling for tall tables */
   }
 
   header {
