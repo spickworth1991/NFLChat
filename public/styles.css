@@ -181,7 +181,8 @@ footer {
 
   #chat-container {
     width: 100%;
-    max-width: 100%;
+    min-width: unset;
+    max-width: 500px;
     height: 100vh; /* Keep it fully visible */
     flex: none;
     display: center;
