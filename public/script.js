@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .then((data) => {
         searchingMessage.remove();
-        console.log(data.reply); // Log the response for debugging
+        //console.log(data.reply); // Log the response for debugging
         if (data.reply) {
           if (typeof data.reply === 'object' && data.reply.title && data.reply.data) {
             // Handle response with title and data
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
 // Function to handle the response and generate the appropriate table
 function handleResponse(response) {
-  console.log('Response:', response); // Log the response for debugging
+  //console.log('Response:', response); // Log the response for debugging
 
   let title;
   let data;

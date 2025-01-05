@@ -235,7 +235,7 @@ def get_seasonal_data(player_name, years, s_type="REG"):
             "title": title,
             "data": filtered_data.to_dict(orient="records"),
         }
-        logging.info(f"Final JSON response for '{player_name}': {response_data}")
+        #logging.info(f"Final JSON response for '{player_name}': {response_data}")
 
         return response_data
     except Exception as e:
@@ -253,7 +253,7 @@ def chat():
     data = request.get_json()
     question = data.get("message", "").strip()
 
-    logging.info(f"Received question: {question}")
+    #logging.info(f"Received question: {question}")
 
     # Check if there's an ongoing query context
     if "current_query" in query_context:
@@ -289,10 +289,10 @@ def chat():
     # Handle QB stats query
     if "qb stats" in question.lower():
         player_name = question.split("qb stats")[-1].strip()
-        logging.info(f"Fetching player stats for: {player_name}")
+        #logging.info(f"Fetching player stats for: {player_name}")
         stats = get_player_stats(player_name)
         if isinstance(stats, dict):  # Ensure stats are properly formatted
-            logging.info("Player stats successfully fetched.")
+            #logging.info("Player stats successfully fetched.")
             return jsonify({"reply": stats})
         logging.warning("Player stats returned an error or no data.")
         return jsonify({"reply": stats})  # For error messages or fallback strings
@@ -304,11 +304,11 @@ def chat():
             return jsonify({"reply": get_weekly_player_data(int(year), player_name)})
         elif player_name:
             query_context["current_query"] = {"type": "weekly data", "player_name": player_name}
-            logging.info("Prompting for year.")
+            #logging.info("Prompting for year.")
             return jsonify({"reply": "Got it! Now specify the year."})
         else:
             query_context["current_query"] = {"type": "weekly data"}
-            logging.info("Prompting for player name.")
+            #logging.info("Prompting for player name.")
             return jsonify({"reply": "Please specify the player name."})
 
     # Handle season data query
@@ -318,17 +318,17 @@ def chat():
             return jsonify({"reply": get_seasonal_data(player_name, [int(year)])})
         elif player_name:
             query_context["current_query"] = {"type": "season data", "player_name": player_name}
-            logging.info("Prompting for year.")
+            #.info("Prompting for year.")
             return jsonify({"reply": "Got it! Now specify the year."})
         else:
             query_context["current_query"] = {"type": "season data"}
-            logging.info("Prompting for player name.")
+            #logging.info("Prompting for player name.")
             return jsonify({"reply": "Who would you like season data for?"})
 
     # Handle play-by-play query
     if "play-by-play" in question.lower():
         query_context["current_query"] = "play_by_play"
-        logging.info("Prompting for play-by-play years.")
+        #logging.info("Prompting for play-by-play years.")
         return jsonify({"reply": "For play-by-play data, specify years like '2010-2020'."})
 
     # Fallback response if no answer is found
