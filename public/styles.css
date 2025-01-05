@@ -173,10 +173,9 @@ footer {
   }
 
   #sidebar {
-    width: 97%;
-    min-width: 97%;
-    max-width: 97%;
-    margin-bottom: 20px;
+    width: 95%;
+    min-width: 95%;
+    max-width: 95%;
     padding: 5px;
     text-align: center;
   }
