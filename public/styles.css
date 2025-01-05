@@ -178,6 +178,7 @@ footer {
     max-width: 98%;
     text-align: center;
     padding:0;
+    margin:5px; 
   }
 
   #sidebar h2 {
@@ -190,7 +191,7 @@ footer {
 
   #chat-container {
     width: 99%;
-    margin:100px 0;
+    margin:5px;
     min-width: 99%;
     max-width: 99%;
     height: calc(100vh - 450px);
