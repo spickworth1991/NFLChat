@@ -80,10 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function scrollToBottom() {
-    messages.scrollTo({
-      top: messages.scrollHeight,
-      behavior: 'smooth',
-    });
+    const chatContainer = document.getElementById('chat-container');
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   function generateTableHTML(data, title, columnOrder = null) {
