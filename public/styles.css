@@ -194,7 +194,7 @@ footer {
 
   header {
     font-size: 1.2em;
-    padding: 3px;
+    padding: 1px;
   }
 
   #messages {
@@ -206,10 +206,8 @@ footer {
   }
 
   footer {
-    flex-shrink: 0;
     flex-direction: column;
     gap: 10px;
-    padding: 10px;
   }
 
   #user-input {
@@ -220,7 +218,6 @@ footer {
 
   #send-btn {
     width: 100%;
-    padding: 10px;
     font-size: 1em;
     margin-left: 0;
   }
