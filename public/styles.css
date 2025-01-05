@@ -164,7 +164,7 @@ footer {
   background-color: #f9f9f9;
 }
 
-@media (max-width: 768px) {
+@media (pointer: coarse) {
   /* Adjust layout for smaller screens */
   #layout-container {
     flex-direction: column;
