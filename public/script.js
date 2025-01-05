@@ -92,24 +92,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mapping column names to user-friendly display names
     const columnHeaderMap = {
       week: "Week",
-      opponent_team: "Opponent",
-      fantasy_points: "Fantasy Points",
-      fantasy_points_ppr: "Fantasy Points (PPR)",
-      completions: "Completions",
+      opponent_team: "Opp.",
+      fantasy_points: "Ftsy Pts",
+      fantasy_points_ppr: "PPR Pts",
+      completions: "Compl.",
       attempts: "Attempts",
-      passing_yards: "Passing Yards",
-      passing_tds: "Passing TDs",
-      interceptions: "Interceptions",
+      passing_yards: "Pass Yds",
+      passing_tds: "Pass TDs",
+      interceptions: "Int.",
       carries: "Carries",
-      rushing_yards: "Rushing Yards",
-      rushing_tds: "Rushing TDs",
+      rushing_yards: "Rush Yds",
+      rushing_tds: "Rush TDs",
       receptions: "Receptions",
       targets: "Targets",
-      receiving_yards: "Receiving Yards",
-      receiving_tds: "Receiving TDs",
+      receiving_yards: "Rec. Yds",
+      receiving_tds: "Rec. TDs",
+      receiving_fumbles: "Rec. Fum.",
+      receiving_fumbles_lost:  "R Fum. Lost",
+      receiving_air_yards: "Rec. Air Yds",
+      receiving_yards_after_catch: "Rec. YAC",
+      receiving_first_downs: "Rec. 1st Downs",
+      receiving_epa: "Rec. EPA",
+      receiving_2pt_conversions: "Rec. 2pt Conv.",
+      target_share: "Tgt. Share",
+      air_yards_share: "Air Yds Share",
+      special_teams_tds: "ST TDs",
+
+  
       // Add more mappings as needed for your column names
     };
   
+
+
+
+
+
+
+
+    
     const container = document.createElement('div');
     const tableContainer = document.createElement('div');
     tableContainer.classList.add('response-table-container');
