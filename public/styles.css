@@ -153,7 +153,7 @@ footer {
 }
 
 .response-table th {
-  background-color: #f1f1f1;
+  background-color: #f1f1f100;
   font-weight: bold;
   position: sticky; /* Keep headers visible when scrolling */
   top: 0;
@@ -170,16 +170,15 @@ footer {
     flex-direction: column;
     align-items: stretch;
     padding:0;
-    margin: 0;
   }
 
   #sidebar {
     width: 96%;
+    height:20vh;
     min-width: 96%;
     max-width: 96%;
     text-align: center;
     padding:0;
-    margin: 0;
   }
 
   #sidebar h2 {
@@ -202,13 +201,11 @@ footer {
     box-sizing: border-box;
     padding:0;
     overflow-y: auto; /* Enable vertical scrolling for tall tables */
-    margin: 0;
   }
 
   header {
     font-size: .7em;
     padding:0;
-    margin: 0;
   }
 
   #messages {
@@ -222,7 +219,6 @@ footer {
   footer {
     flex-direction: column;
     gap: 10px;
-    margin: 0;
   }
 
   #user-input {
