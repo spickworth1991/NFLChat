@@ -72,7 +72,7 @@ header {
   color: #fff;
   padding: 5px;
   text-align: center;
-  font-size: 1.5em;
+  font-size: 1.4em;
 }
 
 /* Chat Messages */
@@ -173,10 +173,20 @@ footer {
   }
 
   #sidebar {
-    width: 100%; /* Full width on mobile */
+    width: 97%;
+    min-width: 97%;
+    max-width: 97%;
     margin-bottom: 20px;
-    margin-right: 0;
+    padding: 5px;
     text-align: center;
+  }
+
+  #sidebar h2 {
+    font-size: .7em;
+  }
+  #sidebar ul li {
+    font-size: 0.6em;
+    line-height: 1.0;
   }
 
   #chat-container {
@@ -193,7 +203,7 @@ footer {
   }
 
   header {
-    font-size: 1.2em;
+    font-size: .7em;
     padding: 1px;
   }
 
