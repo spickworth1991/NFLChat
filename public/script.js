@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchingMessage = addMessage('Searching for an answer...', 'bot');
 
-    fetch('https://nfl-chat-bot.onrender.com/chat', {
+    //fetch('https://nfl-chat-bot.onrender.com/chat', {
+    fetch('http://127.0.0.1:5000/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userMessage }),
@@ -39,7 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.reply) {
           if (typeof data.reply === 'object' && data.reply.title && data.reply.data) {
             // Handle response with title and data
-            const tableHTML = generateTableHTML(data.reply.data, data.reply.title);
+            const tableHTML = handleResponse(data.reply);
+            addMessage(tableHTML, 'bot', true);
+          } else if (Array.isArray(data.reply)) {
+            // Handle response as an array
+            const tableHTML = handleResponse(data.reply);
             addMessage(tableHTML, 'bot', true);
           } else if (data.reply.includes("\n")) {
             // Multiline string
@@ -49,14 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Single-line string
             addMessage(data.reply, 'bot');
           }
-        } else {
-          addMessage("I couldn't find an answer. Please try again.", 'bot');
         }
       })
       .catch((error) => {
         searchingMessage.remove();
-        console.error("Error in sendMessage:", error);
-        addMessage("Sorry, I couldn't process your request. Try again later.", 'bot');
+        console.error('Error fetching data:', error);
+        addMessage('Sorry, there was an error fetching the data.', 'bot');
       });
   }
 
@@ -83,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function generateTableHTML(data, title) {
+  function generateTableHTML(data, title, columnOrder = null) {
     if (!data || data.length === 0) return '<p>No data available.</p>';
   
     // Create the container for the table and title
@@ -96,15 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
     titleElement.textContent = title;
     container.appendChild(titleElement);
   
-    // Desired column order
-    const desiredOrder = [
-      "week",
-      "opponent_team",
-      "fantasy_points",
-      "fantasy_points_ppr",
-      ...Object.keys(data[0]).filter(
-        (key) => !["week", "opponent_team", "fantasy_points", "fantasy_points_ppr"].includes(key)
-      ),
+    // Determine the columns to display based on the data and columnOrder
+    const columns = Object.keys(data[0]);
+    let desiredOrder = columnOrder ? columnOrder.filter(col => columns.includes(col)) : columns;
+  
+    // Include any columns not explicitly listed in the desiredOrder at the end
+    desiredOrder = [
+      ...desiredOrder,
+      ...columns.filter((key) => !desiredOrder.includes(key)),
     ];
   
     // Create the table
@@ -125,23 +127,87 @@ document.addEventListener('DOMContentLoaded', () => {
       const tableRow = document.createElement('tr');
       desiredOrder.forEach((key) => {
         const td = document.createElement('td');
-        // Format numbers to a max of 2 decimal places or no decimals if unnecessary
-        const value = row[key];
-        td.textContent =
-          value === null || value === undefined
-            ? 'N/A'
-            : typeof value === 'number' && value % 1 !== 0
-            ? value.toFixed(2)
-            : value;
+        td.textContent = row[key];
         tableRow.appendChild(td);
       });
       table.appendChild(tableRow);
     });
   
-    tableContainer.appendChild(table); // Add the table to the wrapper
-    container.appendChild(tableContainer); // Add the wrapper to the container
+    tableContainer.appendChild(table);
+    container.appendChild(tableContainer);
   
-    return container.outerHTML; // Return the HTML of the entire structure
+    return container.innerHTML;
   }
+  
+  // Example usage for weekly data
+  const weeklyColumnOrder = [
+    "week",
+    "opponent_team",
+    "fantasy_points",
+    "fantasy_points_ppr",
+    // Add other columns as needed
+  ];
+  
+  // Example usage for seasonal data
+  const seasonalColumnOrder = [
+    "completions", "attempts", "passing_yards", "passing_tds", "interceptions", "sacks", "sack_yards",
+    "sack_fumbles", "sack_fumbles_lost", "passing_air_yards", "passing_yards_after_catch", "passing_first_downs",
+    "passing_epa", "passing_2pt_conversions", "pacr", "dakota", "carries", "rushing_yards", "rushing_tds",
+    "rushing_fumbles", "rushing_fumbles_lost", "rushing_first_downs", "rushing_epa", "rushing_2pt_conversions",
+    "receptions", "targets", "receiving_yards", "receiving_tds", "receiving_fumbles", "receiving_fumbles_lost",
+    "receiving_air_yards", "receiving_yards_after_catch", "receiving_first_downs", "receiving_epa",
+    "receiving_2pt_conversions", "racr", "target_share", "air_yards_share", "wopr_x", "special_teams_tds",
+    "fantasy_points", "fantasy_points_ppr", "games", "tgt_sh", "ay_sh", "yac_sh", "wopr_y", "ry_sh", "rtd_sh",
+    "rfd_sh", "rtdfd_sh", "dom", "w8dom", "yptmpa", "ppr_sh",
+    // Add other columns as needed
+  ];
+  
+  // Function to generate weekly data table
+  function generateWeeklyTable(data, title) {
+    return generateTableHTML(data, title, weeklyColumnOrder);
+  }
+  
+  // Function to generate seasonal data table
+  function generateSeasonalTable(data, title) {
+    return generateTableHTML(data, title, seasonalColumnOrder);
+  }
+  
+// Function to handle the response and generate the appropriate table
+function handleResponse(response) {
+  console.log('Response:', response); // Log the response for debugging
+
+  let title;
+  let data;
+
+  // Normalize the response structure
+  if (response && response.title && response.data) {
+    title = response.title;
+    data = response.data;
+  } else if (Array.isArray(response)) {
+    data = response;
+    title = "Data"; // Default title for array response
+  } else {
+    return '<p>No data available.</p>';
+  }
+
+  // Check if data is defined and is an array
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      // Handle case where data is empty but title is provided
+      return `<p>${title}</p>`;
+    }
+
+    const columns = Object.keys(data[0]);
+    if (columns.includes("week") && columns.includes("opponent_team")) {
+      // Weekly data
+      return generateWeeklyTable(data, title);
+    } else {
+      // Seasonal data
+      return generateSeasonalTable(data, title);
+    }
+  }
+
+  return '<p>No data available.</p>';
+}
   
 });
