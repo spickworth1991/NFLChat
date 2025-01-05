@@ -169,6 +169,7 @@ footer {
   #layout-container {
     flex-direction: column;
     align-items: stretch;
+    padding:0;
   }
 
   #sidebar {
@@ -176,6 +177,7 @@ footer {
     min-width: 96%;
     max-width: 96%;
     text-align: center;
+    padding:0;
   }
 
   #sidebar h2 {
@@ -196,11 +198,13 @@ footer {
     flex-direction: column;
     flex-basis: auto;
     box-sizing: border-box;
+    padding:0;
     overflow-y: auto; /* Enable vertical scrolling for tall tables */
   }
 
   header {
     font-size: .7em;
+    padding:0;
   }
 
   #messages {
