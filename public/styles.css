@@ -63,14 +63,14 @@ body {
   border: 2px solid #333;
   border-radius: 10px;
   background-color: #fff;
-  overflow: hidden; /* Prevent chat container overflow */
   box-sizing: border-box;
+  overflow-y: auto; /* Make the chat container scrollable */
 }
 
 header {
   background-color: #2a9df4;
   color: #fff;
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   font-size: 1.5em;
 }
@@ -180,10 +180,10 @@ footer {
   }
 
   #chat-container {
-    width: 100%;
-    min-width: 100%;
-    max-width: 100%;
-    max-height: 500px;
+    width: 97%;
+    min-width: 97%;
+    max-width: 97%;
+    max-height: 300px;
     height: 100vh; /* Keep it fully visible */
     flex: none;
     display: center;
