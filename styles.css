@@ -1,0 +1,247 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f9;
+  overflow: hidden; /* Prevent body overflow */
+}
+
+/* Layout for the container */
+#layout-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  padding: 10px;
+  background-color: #f4f4f9;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent container overflow */
+}
+
+/* Sidebar Styling */
+#sidebar {
+  width: 150px;
+  background-color: #e9ecef;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  margin-right: 10px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#sidebar h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+  text-align: center;
+  color: #2a9df4;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar ul li {
+  margin: 10px 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+/* Chat Container */
+#chat-container {
+  flex: 1;
+  min-width: 800px;
+  max-width: 800px;
+  height: 100%; /* Make it fill the parent container */
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #333;
+  border-radius: 10px;
+  background-color: #fff;
+  box-sizing: border-box;
+  overflow-y: auto; /* Make the chat container scrollable */
+}
+
+header {
+  background-color: #2a9df4;
+  color: #fff;
+  padding: 5px;
+  text-align: center;
+  font-size: 1.4em;
+}
+
+/* Chat Messages */
+#messages {
+  flex: 1;
+  overflow-y: auto; /* Allow vertical scrolling */
+  padding: 10px;
+  background-color: #e9ecef;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  max-width: 80%;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.message.user {
+  align-self: flex-end;
+  background-color: #d4edda;
+}
+
+.message.bot {
+  align-self: flex-start;
+  background-color: #f8d7da;
+}
+
+/* Footer Input Section */
+footer {
+  flex-shrink: 0; /* Prevent footer from shrinking */
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+
+#user-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#send-btn {
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2a9df4;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Table Styles */
+.response-table-container {
+  max-height: 300px; /* Limit the table height */
+  max-width: 100%; /* Keep it within the chat container */
+  overflow-x: auto; /* Enable horizontal scrolling for wide tables */
+  overflow-y: auto; /* Enable vertical scrolling for tall tables */
+  border: 1px solid #ccc;
+  background-color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.response-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto; /* Adjust column sizes automatically */
+}
+
+.response-table th,
+.response-table td {
+  padding: 8px;
+  text-align: left;
+  word-wrap: break-word; /* Prevent overflow of long text */
+  font-size: 0.9em;
+}
+
+.response-table th {
+  background-color: #f1f1f100;
+  font-weight: bold;
+  position: sticky; /* Keep headers visible when scrolling */
+  top: 0;
+}
+
+.response-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Mobile Optimization */
+@media (max-device-width: 768px) {
+  /* Adjust layout for smaller screens */
+  #layout-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding:0;
+  }
+
+  #sidebar {
+    width: 98%;
+    min-width: 98%;
+    max-width: 98%;
+    text-align: center;
+    padding:0;
+    margin:2.5px; 
+  }
+
+  #sidebar h2 {
+    font-size: .7em;
+  }
+  #sidebar ul li {
+    font-size: 0.6em;
+    line-height: 1.0;
+  }
+
+  #chat-container {
+    width: 99%;
+    margin:2.5px;
+    min-width: 99%;
+    max-width: 99%;
+    height: calc(100vh - 450px);
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    flex-basis: auto;
+    box-sizing: border-box;
+    padding:0;
+    overflow-y: auto; /* Enable vertical scrolling for tall tables */
+  }
+
+  header {
+    font-size: .7em;
+    padding:0;
+  }
+
+  #messages {
+    flex: 1; /* Allow the messages to grow within available space */
+    max-height: calc(100vh - 150px); /* Deduct space for header and footer */
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f9f9f9;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #user-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+  }
+
+  #send-btn {
+    width: 100%;
+    font-size: 1em;
+    margin-left: 0;
+  }
+
+  .response-table-container {
+    max-height: 200px; /* Further restrict height for smaller screens */
+    margin-bottom: 10px;
+  }
+
+  .response-table th,
+  .response-table td {
+    font-size: 0.65em; /* Slightly smaller font for mobile */
+    padding: 5px;
+  }
+}

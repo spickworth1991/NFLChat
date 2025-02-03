@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFL Info Bot</title>
+  <link rel="stylesheet" href="/public/styles.css">
+</head>
+<body>
+  <div id="layout-container">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <h2>Legend</h2>
+      <ul>
+        <li><strong>1. Qb Stats &lt;Player Name&gt;</strong> - Stats for searched player from 2023 Season</li>
+        <li><strong>2. Weekly Data</strong> -"Weekly Data *Player Name* *Year*" or Weekly Data then Follow prompts to get weekly stats for searched player within searched season.</li>
+        <li><strong>3. Season Data</strong> - "Season Data *Player Name* *Year*" or Season Data then Follow prompts to get season stats for searched player within searched season.</li>
+        <li><strong>4. Random Questions</strong> - Some random questions may return correct answers. This is a work in progress.</li>
+      </ul>
+    </aside>
+
+    <!-- Chat Container -->
+    <div id="chat-container">
+      <header>
+        <h1>NFL Infobot</h1>
+      </header>
+      <main id="chat-window">
+        <div id="messages"></div>
+      </main>
+      <footer>
+        <input type="text" id="user-input" placeholder="Ask me anything about the NFL...">
+        <button id="send-btn">Send</button>
+      </footer>
+    </div>
+  </div>
+  <script src="/public/script.js" defer></script>
+  <link rel="icon" href="favicon.ico">
+</body>
+</html>

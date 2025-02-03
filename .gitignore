@@ -1,0 +1,8 @@
+.vercel
+auto.js
+node_modules
+pbp_update.py
+temp.py
+playerIds.py
+backend\pbp_data_year\TrackLargeDBs.py
+backend\pbp_data_year\GetNewYears.py

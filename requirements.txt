@@ -1,0 +1,8 @@
+flask
+flask-cors
+requests
+beautifulsoup4
+pandas
+nfl-data-py
+openai
+sqlite3
