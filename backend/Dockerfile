@@ -3,6 +3,7 @@ FROM rocker/r-ver:4.2.2
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    sqlite3 \
     python3 \
     python3-pip \
     python3-dev \
