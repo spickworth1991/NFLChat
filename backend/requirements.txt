@@ -5,4 +5,4 @@ beautifulsoup4
 pandas
 nfl-data-py
 openai
-sqlite3
+
