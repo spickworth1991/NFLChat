@@ -76,16 +76,16 @@ def chat():
     for chat in chat_history[-5:]:  # Keep last 5 interactions
         user_prompt = chat + "\\n" + user_prompt
 
-    # Call OpenAI API (new format for v1.0.0+)
+    # Call OpenAI API (Fixed Syntax)
     try:
-        response = openai.client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": user_prompt}
             ]
         )
-        reply = response.choices[0].message.content.strip()
+        reply = response["choices"][0]["message"]["content"].strip()
 
         # Update session cache
         chat_history.append(f"User: {message}\\nAI: {reply}")
