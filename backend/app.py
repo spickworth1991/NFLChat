@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import sqlite3
@@ -67,27 +66,29 @@ def chat():
     chat_history = session["chat_history"]
 
     # Construct prompt with user context
-    user_prompt = f"User: {message}\n"
+    user_prompt = f"User: {message}\\n"
     if name:
-        user_prompt = f"{name}: {message}\n"
+        user_prompt = f"{name}: {message}\\n"
     if personality:
-        user_prompt = f"{name} ({personality}): {message}\n"
+        user_prompt = f"{name} ({personality}): {message}\\n"
 
     # Add context from session cache
     for chat in chat_history[-5:]:  # Keep last 5 interactions
-        user_prompt = chat + "\n" + user_prompt
+        user_prompt = chat + "\\n" + user_prompt
 
-    # Call OpenAI API
+    # Call OpenAI API (new format for v1.0.0+)
     try:
-        response = openai.ChatCompletion.create(
+        response = openai.client.chat.completions.create(
             model="gpt-4",
-            messages=[{"role": "system", "content": "You are a helpful assistant."},
-                      {"role": "user", "content": user_prompt}]
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": user_prompt}
+            ]
         )
-        reply = response["choices"][0]["message"]["content"].strip()
+        reply = response.choices[0].message.content.strip()
 
         # Update session cache
-        chat_history.append(f"User: {message}\nAI: {reply}")
+        chat_history.append(f"User: {message}\\nAI: {reply}")
         session["chat_history"] = chat_history
 
         return jsonify({"reply": reply})
