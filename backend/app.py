@@ -3,6 +3,7 @@ from flask_cors import CORS
 import sqlite3
 import openai
 import logging
+import requests
 import json
 import os
 
@@ -10,7 +11,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecretkey")  # Needed for session handling
 
-openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # Use OpenAI's new client format
+openai.api_key = os.getenv("OPENAI_API_KEY")  # OpenAI API Key
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -66,29 +67,40 @@ def chat():
     chat_history = session["chat_history"]
 
     # Construct prompt with user context
-    user_prompt = f"User: {message}\n"
+    user_prompt = f"User: {message}\\n"
     if name:
-        user_prompt = f"{name}: {message}\n"
+        user_prompt = f"{name}: {message}\\n"
     if personality:
-        user_prompt = f"{name} ({personality}): {message}\n"
+        user_prompt = f"{name} ({personality}): {message}\\n"
 
     # Add context from session cache
     for chat in chat_history[-5:]:  # Keep last 5 interactions
-        user_prompt = chat + "\n" + user_prompt
+        user_prompt = chat + "\\n" + user_prompt
 
-    # Call OpenAI API using the **corrected new syntax**
+    # Call OpenAI API (new format for v1.0.0+)
     try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": user_prompt}
-            ]
-        )
-        reply = response.choices[0].message.content.strip()
+        HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")  # Store your API key in Render
+
+        def query_huggingface(prompt):
+            headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
+            data = {"inputs": prompt}
+
+            response = requests.post(
+                "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct",
+                headers=headers,
+                json=data
+            )
+
+            if response.status_code == 200:
+                return response.json()[0]["generated_text"]
+            else:
+                return "Error: Hugging Face API request failed."
+
+        # In chat function:
+        reply = query_huggingface(user_prompt)
 
         # Update session cache
-        chat_history.append(f"User: {message}\nAI: {reply}")
+        chat_history.append(f"User: {message}\\nAI: {reply}")
         session["chat_history"] = chat_history
 
         return jsonify({"reply": reply})
